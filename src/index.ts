@@ -84,7 +84,7 @@ server.tool(
       if (planId) selector.planId = planId;
       if (repoId) selector.repoId = repoId;
 
-      const body = Object.keys(selector).length > 0 ? { selector } : {};
+      const body = Object.keys(selector).length > 0 ? { selector } : { selector: {} };
       const data = (await backrestPost("v1.Backrest/GetOperations", body)) as { operations?: Operation[] };
 
       const ops = (data.operations ?? []).slice(0, limit);
