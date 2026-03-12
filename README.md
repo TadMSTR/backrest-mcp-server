@@ -17,6 +17,18 @@ Set via environment variables in your Claude Desktop MCP config:
 | `BACKREST_USERNAME` | _(empty)_ | Username for basic auth (if auth is enabled) |
 | `BACKREST_PASSWORD` | _(empty)_ | Password for basic auth |
 
+A `.env.example` template is included in the repo root.
+
+### TLS
+
+If connecting to an HTTPS endpoint with a private or self-signed CA, set:
+
+```
+NODE_EXTRA_CA_CERTS=/path/to/ca.crt
+```
+
+Do **not** use `NODE_TLS_REJECT_UNAUTHORIZED=0` — that disables all certificate verification globally.
+
 ## Claude Desktop Config
 
 ```json
@@ -24,7 +36,7 @@ Set via environment variables in your Claude Desktop MCP config:
   "mcpServers": {
     "backrest": {
       "command": "node",
-      "args": ["/home/ted/repos/personal/backrest-mcp-server/build/src/index.js"],
+      "args": ["/path/to/backrest-mcp-server/build/src/index.js"],
       "env": {
         "BACKREST_URL": "http://localhost:9898",
         "BACKREST_USERNAME": "your-username",
@@ -42,7 +54,6 @@ If Backrest auth is disabled, omit `BACKREST_USERNAME` and `BACKREST_PASSWORD`.
 ## Build
 
 ```bash
-cd /home/ted/repos/personal/backrest-mcp-server
 pnpm install
 pnpm run build
 ```

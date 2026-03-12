@@ -37,12 +37,14 @@ const server = new McpServer({
   version: "0.1.0",
 });
 
+const planIdSchema = z.string().min(1).max(128).regex(/^[\w\-]+$/, "Plan ID must contain only alphanumeric characters, underscores, and hyphens");
+const repoIdSchema = z.string().min(1).max(128).regex(/^[\w\-]+$/, "Repo ID must contain only alphanumeric characters, underscores, and hyphens");
 
 server.tool(
   "trigger-backup",
   "Trigger a Backrest backup plan by plan ID. Blocks until the backup completes (or times out, in which case the backup continues in the background).",
   {
-    planId: z.string().describe("The Backrest plan ID to trigger"),
+    planId: planIdSchema.describe("The Backrest plan ID to trigger"),
   },
   async ({ planId }) => {
     try {
@@ -64,8 +66,8 @@ server.tool(
   "get-operations",
   "Fetch recent operation history from Backrest. Optionally filter by plan ID or repo ID. Returns status, timestamps, and any errors.",
   {
-    planId: z.string().optional().describe("Filter operations by plan ID"),
-    repoId: z.string().optional().describe("Filter operations by repository ID"),
+    planId: planIdSchema.optional().describe("Filter operations by plan ID"),
+    repoId: repoIdSchema.optional().describe("Filter operations by repository ID"),
     limit: z.number().min(1).max(100).default(20).describe("Max number of operations to return"),
   },
   async ({ planId, repoId, limit }) => {
