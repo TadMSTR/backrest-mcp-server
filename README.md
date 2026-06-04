@@ -79,6 +79,22 @@ pip install -e ".[dev]"
 pytest
 ```
 
+## Deployment (PM2)
+
+An `ecosystem.config.js` is included for PM2-managed deployment. Credentials are injected
+via `--env-file` to avoid storing them in the config file:
+
+```bash
+cd /path/to/backrest-mcp
+pm2 start ecosystem.config.js --env-file /path/to/secrets.env
+```
+
+The secrets file must contain `BACKREST_USERNAME` and `BACKREST_PASSWORD`. All other settings
+default safely in `ecosystem.config.js` (`BACKREST_READONLY=true`, `BACKREST_ALLOW_DESTRUCTIVE=false`).
+
+The server runs in stdio mode via the `backrest-mcp` entry point. To expose over HTTP,
+use a FastMCP HTTP wrapper or proxy.
+
 ## Claude Desktop Config
 
 ```json
@@ -110,11 +126,23 @@ REQUESTS_CA_BUNDLE=/path/to/ca.crt
 
 httpx respects this env var. Do **not** disable TLS verification.
 
+## Observability
+
+Structured JSON logs via structlog. `LOG_LEVEL` controls verbosity (default: INFO). Set
+`LOG_FILE` to write to a file instead of stderr.
+
+Optional InfluxDB metrics via `pip install -e ".[influxdb]"`:
+
+| Env var | Purpose |
+|---------|---------|
+| `INFLUXDB_URL` | InfluxDB write URL |
+| `INFLUXDB_TOKEN` | Auth token |
+| `INFLUXDB_ORG` | Organization |
+| `INFLUXDB_BUCKET` | Bucket (default: `backrest`) |
+
+Each tool call emits a `backrest_tool` measurement with `tool` tag and `duration_ms` field.
+
 ## Auth Architecture
 
 Credentials flow: env vars → `BackrestClient.__init__` → httpx Basic Auth tuple → Authorization header.
 Credentials are never written to logs, audit entries, or MCP tool responses.
-
-## Backrest Deployment
-
-Backrest is not yet deployed on forge. The `ecosystem.config.js` targets `http://localhost:9898` — the planned address once the `backrest-forge-deploy-2026-06` sysadmin task completes.
