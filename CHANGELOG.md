@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.2.0] — 2026-06-04
+
+### Changed
+
+- Rewritten from TypeScript/Node to Python/FastMCP to match forge MCP standard
+- Renamed from `backrest-mcp-server` to `backrest-mcp`
+
+### Added
+
+- `get_config` — read Backrest config (repos, plans)
+- `list_snapshots` — list snapshots for a repo or plan
+- `list_snapshot_files` — browse files within a snapshot
+- `get_summary` — 30-day dashboard stats (success/fail counts, bytes added)
+- `do_repo_task` — trigger prune/check/stats/unlock/index on a repo
+- `forget_snapshot` — forget a specific snapshot (requires ALLOW_DESTRUCTIVE + confirm token)
+- `restore_snapshot` — restore a snapshot to a staging path (requires ALLOW_DESTRUCTIVE + path guard)
+- `cancel_operation` — cancel a running operation
+- `trigger_backup` gains `dry_run` parameter
+- `safety.py` — layered safety controls: READONLY mode, ALLOW_DESTRUCTIVE gate, restore path
+  guard, forget confirmation token, audit log
+- `ecosystem.config.js` — PM2 config with safe defaults (READONLY=true)
+- `observability.py` — structlog JSON logging + optional InfluxDB metrics
+- `tests/` — pytest + respx mocks (test_client, test_tools, test_safety)
+
 ## [0.1.1] — 2026-03-12
 
 ### Security

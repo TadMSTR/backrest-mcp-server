@@ -6,8 +6,8 @@
 
 To report a vulnerability, use one of these channels:
 
-- **GitHub private disclosure:** Use the [Security tab](https://github.com/TadMSTR/backrest-mcp-server/security/advisories/new) to submit a private advisory.
-- **Email:** Send a description to `security.i9v75@8alias.com` with the subject line `[backrest-mcp-server] Security Report`.
+- **GitHub private disclosure:** Use the [Security tab](https://github.com/TadMSTR/backrest-mcp/security/advisories/new) to submit a private advisory.
+- **Email:** Send a description to `security.i9v75@8alias.com` with the subject line `[backrest-mcp] Security Report`.
 
 Include as much detail as possible: the affected component, steps to reproduce, and potential impact.
 
@@ -18,7 +18,7 @@ Include as much detail as possible: the affected component, steps to reproduce, 
 - SSRF via the Backrest endpoint configuration
 - Injection in backup job names, paths, or restore target arguments passed to Backrest
 - Information disclosure through backup status responses exposing file paths or credentials
-- Dependency vulnerabilities with a plausible exploitation path in backrest-mcp-server's usage
+- Dependency vulnerabilities with a plausible exploitation path in backrest-mcp's usage
 
 **Out of scope:**
 
