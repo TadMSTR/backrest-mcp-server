@@ -96,6 +96,9 @@ async def _get_nats():
         return None
     try:
         import nats
+        # SECURITY[deferred]: no credential support — forge NATS requires per-agent auth.
+        # Silent failure if NATS_URL set without creds. NATS telemetry not currently enabled.
+        # Target: when NATS telemetry is enabled for this server. Audit: 2026-06-04/backrest-mcp-2026-06. Ticket: BKRST-1.
         _nats_client = await nats.connect(url)
     except Exception:
         pass

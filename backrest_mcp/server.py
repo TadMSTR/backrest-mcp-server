@@ -163,6 +163,8 @@ async def list_snapshot_files(
         validate_backrest_id("snapshot_id", snapshot_id)
     except ValueError as e:
         return _tool_error("list_snapshot_files", e)
+    # SECURITY[deferred]: path not validated — goes in JSON body to local HTTP API; Backrest validates server-side.
+    # Ticket: BKRST-2. Audit: 2026-06-04/backrest-mcp-2026-06.
     body = {"repoGuid": repo_guid, "snapshotId": snapshot_id, "path": path}
     t0 = time.perf_counter()
     try:
@@ -435,6 +437,8 @@ if ALLOW_DESTRUCTIVE:
 
         audit_log("restore_snapshot", {"snapshot_id": snapshot_id, "repo_id": repo_id, "path": path, "target": target, "plan_id": plan_id})
         client = get_client()
+        # SECURITY[deferred]: path (within-snapshot source) not validated — goes in JSON body to local HTTP API; Backrest validates server-side.
+        # Ticket: BKRST-2. Audit: 2026-06-04/backrest-mcp-2026-06.
         body: dict = {
             "snapshotId": snapshot_id,
             "repoId": repo_id,
