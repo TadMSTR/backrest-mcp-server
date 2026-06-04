@@ -30,7 +30,7 @@ from .models import (
     SummaryDashboard,
 )
 from .observability import emit_metric
-from .safety import ALLOW_DESTRUCTIVE, READONLY, RESTORE_ALLOWED_PREFIX, audit_log
+from .safety import ALLOW_DESTRUCTIVE, READONLY, RESTORE_ALLOWED_PREFIX, audit_log, validate_backrest_id
 
 log = structlog.get_logger(__name__)
 
@@ -67,7 +67,7 @@ _STATUS_ICONS: dict[str, str] = {
 
 def _tool_error(tool: str, err: Exception) -> dict:
     log.error("tool_error", tool=tool, error=str(err))
-    return {"error": str(err)}
+    return {"error": "tool call failed — check server logs for details"}
 
 
 def _fmt_ms(ms: Optional[int]) -> str:
@@ -119,6 +119,13 @@ async def list_snapshots(
     Returns a list of snapshots with ID, timestamp, hostname, paths, and tags.
     """
     client = get_client()
+    try:
+        if repo_id:
+            validate_backrest_id("repo_id", repo_id)
+        if plan_id:
+            validate_backrest_id("plan_id", plan_id)
+    except ValueError as e:
+        return _tool_error("list_snapshots", e)
     body: dict = {}
     if repo_id:
         body["repoId"] = repo_id
@@ -150,6 +157,10 @@ async def list_snapshot_files(
     Returns a list of file/directory entries at the given path.
     """
     client = get_client()
+    try:
+        validate_backrest_id("snapshot_id", snapshot_id)
+    except ValueError as e:
+        return _tool_error("list_snapshot_files", e)
     body = {"repoGuid": repo_guid, "snapshotId": snapshot_id, "path": path}
     t0 = time.perf_counter()
     try:
@@ -195,6 +206,13 @@ async def get_operations(
     Returns a formatted list of operations with status icons and durations.
     """
     client = get_client()
+    try:
+        if plan_id:
+            validate_backrest_id("plan_id", plan_id)
+        if repo_id:
+            validate_backrest_id("repo_id", repo_id)
+    except ValueError as e:
+        return _tool_error("get_operations", e)
     selector: dict = {}
     if plan_id:
         selector["planId"] = plan_id
@@ -248,6 +266,10 @@ if not READONLY:
 
         Returns the operation ID of the triggered backup.
         """
+        try:
+            validate_backrest_id("plan_id", plan_id)
+        except ValueError as e:
+            return _tool_error("trigger_backup", e)
         audit_log("trigger_backup", {"plan_id": plan_id, "dry_run": dry_run})
         client = get_client()
         body = {"value": plan_id, "dryRun": dry_run}
@@ -278,6 +300,10 @@ if not READONLY:
 
         Returns the task result from Backrest.
         """
+        try:
+            validate_backrest_id("repo_id", repo_id)
+        except ValueError as e:
+            return _tool_error("do_repo_task", e)
         audit_log("do_repo_task", {"repo_id": repo_id, "task": task})
         client = get_client()
         task_int = _REPO_TASK_MAP[task]
@@ -299,6 +325,10 @@ if not READONLY:
 
         Returns the cancel result.
         """
+        try:
+            validate_backrest_id("operation_id", operation_id)
+        except ValueError as e:
+            return _tool_error("cancel_operation", e)
         audit_log("cancel_operation", {"operation_id": operation_id})
         client = get_client()
         t0 = time.perf_counter()
@@ -335,6 +365,11 @@ if ALLOW_DESTRUCTIVE:
 
         Returns the forget result, or an error if confirmation is wrong.
         """
+        try:
+            validate_backrest_id("snapshot_id", snapshot_id)
+            validate_backrest_id("repo_id", repo_id)
+        except ValueError as e:
+            return _tool_error("forget_snapshot", e)
         expected = f"FORGET:{snapshot_id}"
         if confirm != expected:
             return {
@@ -380,6 +415,11 @@ if ALLOW_DESTRUCTIVE:
 
         Returns the restore operation result, or an error if target is outside allowed prefix.
         """
+        try:
+            validate_backrest_id("snapshot_id", snapshot_id)
+            validate_backrest_id("repo_id", repo_id)
+        except ValueError as e:
+            return _tool_error("restore_snapshot", e)
         allowed = os.path.realpath(RESTORE_ALLOWED_PREFIX)
         resolved = os.path.realpath(target)
         if not resolved.startswith(allowed):

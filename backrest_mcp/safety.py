@@ -16,7 +16,22 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import re
 import time
+
+# Pattern for Backrest IDs (plan IDs, repo IDs, snapshot IDs, operation IDs).
+# Allows alphanumeric, hyphens, underscores, and dots — rejects path traversal
+# and shell metacharacters before IDs are forwarded to the Backrest API.
+_ID_RE = re.compile(r'^[a-zA-Z0-9_.\-]{1,256}$')
+
+
+def validate_backrest_id(name: str, value: str) -> None:
+    """Validate a Backrest ID (plan, repo, snapshot, operation) against allowlist pattern.
+
+    Raises ValueError if the value does not match ^[a-zA-Z0-9_.\\-]{1,256}$.
+    """
+    if not _ID_RE.match(value):
+        raise ValueError(f"Invalid {name}: {value!r} — must match ^[a-zA-Z0-9_.-]{{1,256}}$")
 
 # Master read-only switch. When true, no mutating tools are registered.
 READONLY = os.getenv("BACKREST_READONLY", "true").lower() in ("1", "true", "yes")

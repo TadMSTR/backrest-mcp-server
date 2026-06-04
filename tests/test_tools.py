@@ -57,8 +57,8 @@ async def test_get_summary_returns_dashboard(mcp_server):
         ],
         "planSummaries": [],
     }
-    with respx.mock():
-        respx.post(f"{BASE_URL}/v1.Backrest/GetSummaryDashboard").mock(
+    with respx.mock() as mock:
+        mock.post(f"{BASE_URL}/v1.Backrest/GetSummaryDashboard").mock(
             return_value=httpx.Response(200, json=summary_response)
         )
         result = await mcp_server.call_tool("get_summary", {})
