@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.2.1] — 2026-06-04
+
+### Security
+
+- Fixed restore path guard sibling-directory bypass — replaced `startswith()` with
+  `Path.is_relative_to()` to correctly reject paths like `/tmp/backrest-restore-evil/`
+  when allowed prefix is `/tmp/backrest-restore/` (F-01)
+- Added `validate_backrest_id()` to `repo_guid` parameter in `list_snapshot_files` —
+  completes consistent ID validation across all 10 tools (F-02)
+- Added upper bounds to all runtime dependencies to prevent silent major-version adoption:
+  `fastmcp>=3.0,<4.0`, `httpx>=0.27,<1.0`, `pydantic>=2.0,<3.0`, `structlog>=24.0,<27.0` (F-04)
+- Added sibling-prefix bypass test `test_restore_sibling_prefix_rejected` (F-03)
+
+## [0.2.0] — 2026-06-04
+
+### Changed
+
+- Rewritten from TypeScript/Node to Python/FastMCP to match forge MCP standard
+- Renamed from `backrest-mcp-server` to `backrest-mcp`
+
+### Added
+
+- `get_config` — read Backrest config (repos, plans)
+- `list_snapshots` — list snapshots for a repo or plan
+- `list_snapshot_files` — browse files within a snapshot
+- `get_summary` — 30-day dashboard stats (success/fail counts, bytes added)
+- `do_repo_task` — trigger prune/check/stats/unlock/index on a repo
+- `forget_snapshot` — forget a specific snapshot (requires ALLOW_DESTRUCTIVE + confirm token)
+- `restore_snapshot` — restore a snapshot to a staging path (requires ALLOW_DESTRUCTIVE + path guard)
+- `cancel_operation` — cancel a running operation
+- `trigger_backup` gains `dry_run` parameter
+- `safety.py` — layered safety controls: READONLY mode, ALLOW_DESTRUCTIVE gate, restore path
+  guard, forget confirmation token, audit log
+- `ecosystem.config.js` — PM2 config with safe defaults (READONLY=true)
+- `observability.py` — structlog JSON logging + optional InfluxDB metrics
+- `tests/` — pytest + respx mocks (test_client, test_tools, test_safety)
+
 ## [0.1.1] — 2026-03-12
 
 ### Security
