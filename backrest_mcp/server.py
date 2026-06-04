@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import datetime
 import os
+import pathlib
 import time
 from typing import Literal, Optional
 
@@ -158,6 +159,7 @@ async def list_snapshot_files(
     """
     client = get_client()
     try:
+        validate_backrest_id("repo_guid", repo_guid)
         validate_backrest_id("snapshot_id", snapshot_id)
     except ValueError as e:
         return _tool_error("list_snapshot_files", e)
@@ -420,9 +422,9 @@ if ALLOW_DESTRUCTIVE:
             validate_backrest_id("repo_id", repo_id)
         except ValueError as e:
             return _tool_error("restore_snapshot", e)
-        allowed = os.path.realpath(RESTORE_ALLOWED_PREFIX)
-        resolved = os.path.realpath(target)
-        if not resolved.startswith(allowed):
+        allowed = pathlib.Path(os.path.realpath(RESTORE_ALLOWED_PREFIX))
+        resolved = pathlib.Path(os.path.realpath(target))
+        if not resolved.is_relative_to(allowed):
             return {
                 "content": [{"type": "text", "text": (
                     f"Restore target must be under {RESTORE_ALLOWED_PREFIX}. "

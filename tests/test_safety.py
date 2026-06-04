@@ -149,6 +149,24 @@ async def test_restore_path_traversal_rejected(monkeypatch, tmp_path):
     assert "must be under" in text
 
 
+async def test_restore_sibling_prefix_rejected(monkeypatch, tmp_path):
+    """restore_snapshot with sibling directory name matching the prefix → isError (F-01)."""
+    restore_prefix = tmp_path / "restore"
+    restore_prefix.mkdir()
+    sibling = tmp_path / "restore-evil"
+    sibling.mkdir()
+    mcp = _reload_server(monkeypatch, readonly="false", destructive="true", restore_prefix=str(restore_prefix))
+    with respx.mock():
+        result = await mcp.call_tool("restore_snapshot", {
+            "snapshot_id": "abc123",
+            "repo_id": "local",
+            "path": "/",
+            "target": str(sibling / "data"),
+        })
+    text = result.content[0].text
+    assert "must be under" in text
+
+
 async def test_restore_valid_target_calls_api(monkeypatch, tmp_path):
     """restore_snapshot with valid target inside prefix → API call made."""
     restore_prefix = tmp_path / "restore"
